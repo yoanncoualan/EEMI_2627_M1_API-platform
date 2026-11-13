@@ -38,6 +38,10 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
+    #[ORM\OneToOne(mappedBy: 'product', cascade: ['persist', 'remove'])]
+    #[Groups(['read', 'write'])]
+    private ?Media $media = null;
+
     public function __construct()
     {
         $this->createdDate = new \DateTime();
@@ -92,6 +96,28 @@ class Product
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getMedia(): ?Media
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?Media $media): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($media === null && $this->media !== null) {
+            $this->media->setProduct(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($media !== null && $media->getProduct() !== $this) {
+            $media->setProduct($this);
+        }
+
+        $this->media = $media;
 
         return $this;
     }
